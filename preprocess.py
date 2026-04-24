@@ -75,13 +75,10 @@ def create_family_size(df):
 
 
 def select_features(df, is_train=True):
-    """
-    Выбирает признаки для обучения модели.
-    is_train=True — возвращает X и y (для обучающей выборки)
-    is_train=False — возвращает только X (для тестовой выборки)
-    """
-    # Список признаков, которые будем подавать в модель
-    feature_columns = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Title', 'FamilySize']
+    """Выбирает признаки для обучения модели"""
+    # РАСШИРЕННЫЙ список признаков (с новыми фичами)
+    feature_columns = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare',
+                       'Title', 'FamilySize', 'AgeGroup', 'FareGroup', 'Pclass_Sex', 'Title_Age']
 
     X = df[feature_columns].copy()
 
@@ -126,6 +123,42 @@ def scale_features(X_train, X_test=None, scaler_type='standard', scaler=None):
         return X_train_scaled, scaler_obj
 
 
+def create_age_group(df):
+    """
+    Разбивает возраст на категории (Feature Engineering)
+    0: ребёнок (0-12), 1: подросток (12-18), 2: молодой взрослый (18-35),
+    3: взрослый (35-60), 4: пожилой (60+)
+    """
+    bins = [0, 12, 18, 35, 60, 100]
+    labels = [0, 1, 2, 3, 4]
+    df['AgeGroup'] = pd.cut(df['Age'], bins=bins, labels=labels, right=False)
+    # Заполняем пропуски (если вдруг остались) самой частой группой
+    df['AgeGroup'].fillna(2, inplace=True)
+    df['AgeGroup'] = df['AgeGroup'].astype(int)
+    return df
+
+
+def create_fare_group(df):
+    """Разбивает стоимость билета на 4 группы по квартилям"""
+    df['FareGroup'] = pd.qcut(df['Fare'], 4, labels=False, duplicates='drop')
+    df['FareGroup'] = df['FareGroup'].astype(int)
+    return df
+
+
+def create_interaction_features(df):
+    """
+    Создаёт комбинации важных признаков (интеракции)
+    Это помогает моделям улавливать нелинейные зависимости
+    """
+    # Взаимодействие класса билета и пола (женщины в 1 классе выживали часто)
+    df['Pclass_Sex'] = df['Pclass'] * df['Sex']
+
+    # Взаимодействие титула и возраста (грубо)
+    df['Title_Age'] = df['Title'] * (df['Age'] // 10).astype(int)
+
+    return df
+
+
 # ========== БЫСТРАЯ ПРОВЕРКА  ==========
 if __name__ == "__main__":
     from data_loader import load_train_data
@@ -134,10 +167,9 @@ if __name__ == "__main__":
     print("ПРОВЕРКА ПРЕДОБРАБОТКИ")
     print("=" * 50)
 
-    # Загружаем данные
     df = load_train_data()
 
-    # Применяем все функции предобработки
+    # Применяем все функции предобработки (включая новые)
     df = fill_missing_age(df)
     df = fill_missing_embarked(df)
     df = fill_missing_fare(df)
@@ -145,18 +177,18 @@ if __name__ == "__main__":
     df = extract_title(df)
     df = create_family_size(df)
 
-    # Выбираем признаки
+    # НОВЫЕ ФИЧИ
+    df = create_age_group(df)
+    df = create_fare_group(df)
+    df = create_interaction_features(df)
+
     X, y = select_features(df, is_train=True)
 
-    # Масштабируем
-    X_scaled, scaler = scale_features(X)
-
-    print("\n Предобработка завершена!")
-    print(f"Форма X после обработки: {X_scaled.shape}")
+    print("\n✅ Предобработка завершена!")
+    print(f"Форма X после обработки: {X.shape}")
     print(f"Форма y: {y.shape}")
     print(f"\nПервые 5 строк обработанных признаков:")
     print(X.head())
 
     print("\n" + "=" * 50)
-    print(" Всё работает! Можно переходить к обучению моделей.")
-    print("=" * 50)
+    print("✅ Всё работает! Теперь с новыми фичами.")

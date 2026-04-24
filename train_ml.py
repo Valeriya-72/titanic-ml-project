@@ -14,6 +14,11 @@ from preprocess import (
     fill_missing_age, fill_missing_embarked, fill_missing_fare,
     encode_sex, extract_title, create_family_size, select_features, scale_features
 )
+from preprocess import (
+    fill_missing_age, fill_missing_embarked, fill_missing_fare,
+    encode_sex, extract_title, create_family_size, select_features, scale_features,
+    create_age_group, create_fare_group, create_interaction_features  # ← добавить эти три
+)
 
 # ========== 1. ЗАГРУЗКА И ПРЕДОБРАБОТКА ДАННЫХ ==========
 print("=" * 60)
@@ -30,8 +35,14 @@ df = encode_sex(df)
 df = extract_title(df)
 df = create_family_size(df)
 
+# НОВЫЕ ФИЧИ (Feature Engineering)
+df = create_age_group(df)
+df = create_fare_group(df)
+df = create_interaction_features(df)
+
 # Выбираем признаки
 X, y = select_features(df, is_train=True)
+
 
 print(f"Признаки: {X.columns.tolist()}")
 print(f"Форма X: {X.shape}, форма y: {y.shape}")

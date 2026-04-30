@@ -1,4 +1,4 @@
-# Deep Neural Network (DNN) через MLPClassifier (sklearn) (пункт 4g чеклиста)
+# Deep Neural Network (DNN) через MLPClassifier (sklearn)
 
 import numpy as np
 from sklearn.model_selection import StratifiedKFold

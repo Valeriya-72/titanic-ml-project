@@ -1,4 +1,4 @@
-# Пункт чеклиста 4g IX (со звёздочкой)
+# Добавление Embedding слоя для категориальных фичей
 
 import torch
 import torch.nn as nn

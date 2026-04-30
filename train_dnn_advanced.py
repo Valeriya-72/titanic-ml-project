@@ -1,5 +1,5 @@
 # DNN на PyTorch с BatchNorm и CosineAnnealingLR
-# Полностью соответствует чеклисту: BatchNorm, scheduler, K-fold, Dropout
+# BatchNorm, scheduler, K-fold, Dropout
 
 import torch
 import torch.nn as nn
